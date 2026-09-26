@@ -1,6 +1,6 @@
 """Configuration des règles.
 
-Les hypothèses H1 à H5 de CLAUDE.md ne sont pas encore tranchées : chacune est
+Les hypothèses H1 à H5 ne sont pas encore tranchées : chacune est
 un paramètre explicite, et la configuration complète doit être enregistrée avec
 les résultats de chaque campagne.
 """
@@ -54,6 +54,16 @@ class RulesConfig:
         data["battle_pickup_order"] = self.battle_pickup_order.value
         data["short_in_battle"] = self.short_in_battle.value
         return data
+
+    @classmethod
+    def fromDict(cls, data: dict) -> "RulesConfig":
+        return cls(
+            hidden_cards_per_battle=data["hidden_cards_per_battle"],
+            battle_pickup_order=BattlePickupOrder(data["battle_pickup_order"]),
+            short_in_battle=ShortInBattle(data["short_in_battle"]),
+            detect_cycles=data["detect_cycles"],
+            max_tricks=data["max_tricks"],
+        )
 
 
 DEFAULT_RULES = RulesConfig()
