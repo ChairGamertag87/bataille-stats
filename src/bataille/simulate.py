@@ -14,7 +14,7 @@ import numpy as np
 from bataille.cards import generateDeal
 from bataille.engine import GameResult, Outcome, TrickRecord, playGame
 from bataille.rules import DEFAULT_RULES, RulesConfig
-from bataille.storage import RESULTS_DIR, loadCampaign, saveCampaign, saveGameTrace
+from bataille.storage import RESULTS_DIR, loadCampaign, saveCampaign, saveGameTrace, saveSnapshots
 
 
 def dealForGame(seed: int, game_index: int) -> tuple[tuple[int, ...], tuple[int, ...]]:
@@ -71,6 +71,17 @@ def handSizesFromTrace(
     return rows
 
 
+def cardDeltaSnapshots(
+    hand_1: tuple[int, ...], hand_2: tuple[int, ...], rules: RulesConfig, checkpoints: tuple[int, ...]
+) -> list[tuple[int, int]]:
+    """Écart de cartes (main 1 moins main 2) après k plis, pour chaque k de checkpoints
+    auquel la partie est encore en cours."""
+    result = playGame(hand_1, hand_2, rules, record_trace=True)
+    sizes = handSizesFromTrace(len(hand_1), len(hand_2), result.trace)
+    # Une partie terminée au pli k n'est plus en cours après k plis : elle est exclue.
+    return [(k, sizes[k][1] - sizes[k][2]) for k in checkpoints if k < result.tricks]
+
+
 def _runCampaignCommand(args: argparse.Namespace) -> None:
     rules = DEFAULT_RULES
     print(f"Running {args.games} games with seed {args.seed}")
@@ -100,6 +111,20 @@ def _traceGameCommand(args: argparse.Namespace) -> None:
     print(f"Game {game_index} ({selection}, {result.tricks} tricks) trace saved to {path}")
 
 
+def _snapshotsCommand(args: argparse.Namespace) -> None:
+    games, metadata = loadCampaign(args.name, results_dir=args.results_dir)
+    rules = RulesConfig.fromDict(metadata["rules"])
+    checkpoints = tuple(sorted(args.tricks))
+    print(f"Replaying {len(games)} games for snapshots at tricks {checkpoints}")
+    rows = [
+        (game_index, trick, delta)
+        for game_index in range(metadata["n_games"])
+        for trick, delta in cardDeltaSnapshots(*dealForGame(metadata["seed"], game_index), rules, checkpoints)
+    ]
+    path = saveSnapshots(args.name, rows, checkpoints, results_dir=args.results_dir)
+    print(f"{len(rows)} snapshots saved to {path}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run War card game simulations.")
     parser.add_argument("--results-dir", type=Path, default=RESULTS_DIR)
@@ -115,6 +140,11 @@ def main() -> None:
     trace.add_argument("--name", required=True)
     trace.add_argument("--game-index", type=int, help="defaults to the median-length finished game")
     trace.set_defaults(handler=_traceGameCommand)
+
+    snapshots = commands.add_parser("snapshots", help="record the card difference of ongoing games at given tricks")
+    snapshots.add_argument("--name", required=True)
+    snapshots.add_argument("--tricks", type=int, nargs="+", required=True)
+    snapshots.set_defaults(handler=_snapshotsCommand)
 
     args = parser.parse_args()
     args.handler(args)
