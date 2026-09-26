@@ -3,7 +3,7 @@ import pytest
 from bataille.cards import DECK_SIZE
 from bataille.engine import playGame
 from bataille.rules import BattlePickupOrder, RulesConfig, ShortInBattle
-from bataille.simulate import dealForGame, handSizesFromTrace, runCampaign, selectTypicalGame
+from bataille.simulate import cardDeltaSnapshots, dealForGame, handSizesFromTrace, runCampaign, selectTypicalGame
 from bataille.storage import loadCampaign, loadGameTrace, saveCampaign, saveGameTrace
 
 
@@ -72,3 +72,13 @@ def testStorageRoundTrip(tmp_path):
     trace, details = loadGameTrace("unit", 2, results_dir=tmp_path)
     assert list(trace["hand_1"]) == [26, 27]
     assert details == {"game_index": 2}
+
+
+def testSnapshotsMatchHandSizesAndSkipFinishedGames():
+    hand_1, hand_2 = dealForGame(2026, 0)
+    result = playGame(hand_1, hand_2, record_trace=True)
+    sizes = handSizesFromTrace(len(hand_1), len(hand_2), result.trace)
+    checkpoints = (0, 10, result.tricks - 1, result.tricks, result.tricks + 50)
+    snapshots = cardDeltaSnapshots(hand_1, hand_2, RulesConfig(), checkpoints)
+    assert snapshots == [(k, sizes[k][1] - sizes[k][2]) for k in checkpoints[:3]]
+    assert snapshots[0] == (0, 0)
