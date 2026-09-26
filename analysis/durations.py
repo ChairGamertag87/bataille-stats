@@ -67,7 +67,7 @@ def plotDurationSurvival(tricks: np.ndarray, metadata: dict) -> plt.Figure:
     ax.set_title("Part des parties qui durent au moins n plis", pad=24)
     style.addSubtitle(
         ax,
-        f"{style.formatInt(len(tricks))} parties terminées. Droite en échelle log : traîne exponentielle, "
+        f"{style.formatInt(len(tricks))} parties terminées. Droite en échelle log, compatible avec une traîne géométrique : "
         f"la part est divisée par 10 tous les {style.formatInt(tailDecadeLength(tricks))} plis environ.",
     )
     style.addSource(fig, f"Campagne « {metadata['name']} », seed {metadata['seed']}.")
