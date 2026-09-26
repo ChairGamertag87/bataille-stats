@@ -1,0 +1,82 @@
+# Fichiers de travail locaux
+/claude/
+
+# Résultats bruts des simulations (régénérables, non versionnés)
+/results/
+
+# Bytecode et caches Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Extensions C
+*.so
+*.pyd
+
+# Packaging et builds
+build/
+dist/
+develop-eggs/
+eggs/
+.eggs/
+sdist/
+wheels/
+*.egg-info/
+*.egg
+MANIFEST
+pip-wheel-metadata/
+share/python-wheels/
+
+# Environnements virtuels
+.venv/
+venv/
+env/
+ENV/
+.python-version
+.env
+.env.*
+
+# Tests et couverture
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+.hypothesis/
+.tox/
+.nox/
+
+# Outils d'analyse statique
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
+.pyre/
+.pytype/
+
+# Numba
+__numba_cache__/
+*.nbi
+*.nbc
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Systèmes d'exploitation
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# Logs et fichiers temporaires
+*.log
+*.tmp
